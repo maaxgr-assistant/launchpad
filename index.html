@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f0f2f5;
+      --surface:   #ffffff;
+      --border:    #e2e8f0;
+      --text:      #1a202c;
+      --muted:     #718096;
+      --shadow:    0 2px 8px rgba(0,0,0,.08);
+      --shadow-hover: 0 6px 20px rgba(0,0,0,.13);
+      --radius:    14px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:      #0f1117;
+        --surface: #1a1d27;
+        --border:  #2d3148;
+        --text:    #e8eaf0;
+        --muted:   #8b92b3;
+        --shadow:  0 2px 8px rgba(0,0,0,.35);
+        --shadow-hover: 0 6px 24px rgba(0,0,0,.55);
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1.5rem 3rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: .9rem;
+      margin-top: .3rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1.1rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .7rem;
+      padding: 1.6rem 1rem 1.4rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      text-decoration: none;
+      color: var(--text);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--accent);
+    }
+
+    .icon-wrap {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .icon-wrap img {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+    }
+
+    .icon-wrap .fallback {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .card-label {
+      font-size: .93rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .card-url {
+      font-size: .72rem;
+      color: var(--muted);
+      text-align: center;
+      word-break: break-all;
+      line-height: 1.3;
+    }
+
+    #clock {
+      text-align: center;
+      font-size: .85rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Dashboard</h1>
+    <p id="clock"></p>
+  </header>
+
+  <div class="grid" id="grid"></div>
+
+  <script>
+    const services = [
+      {
+        name: "Home Assistant",
+        url: "http://192.168.17.42:8123/",
+        favicon: "http://192.168.17.42:8123/static/icons/favicon-192x192.png",
+        accent: "#18BCF2",
+        letter: "H",
+      },
+      {
+        name: "Coolify",
+        url: "http://coolify.home.maax.gr:8000/",
+        favicon: "http://coolify.home.maax.gr:8000/favicon.ico",
+        accent: "#6C47FF",
+        letter: "C",
+      },
+      {
+        name: "Paperless",
+        url: "https://paperless.home.maax.gr/",
+        favicon: "https://paperless.home.maax.gr/favicon.ico",
+        accent: "#2d7a47",
+        letter: "P",
+      },
+      {
+        name: "GitLab",
+        url: "https://gitlab.maax.gr/",
+        favicon: "https://gitlab.maax.gr/favicon.ico",
+        accent: "#FC6D26",
+        letter: "G",
+      },
+      {
+        name: "Photoprism",
+        url: "http://vm-media.fritz.box:2342/",
+        favicon: "http://vm-media.fritz.box:2342/favicon.ico",
+        accent: "#00B388",
+        letter: "P",
+      },
+    ];
+
+    function buildCards() {
+      const grid = document.getElementById("grid");
+      services.forEach(svc => {
+        const a = document.createElement("a");
+        a.href = svc.url;
+        a.className = "card";
+        a.style.setProperty("--accent", svc.accent);
+        a.title = svc.name;
+
+        const wrap = document.createElement("div");
+        wrap.className = "icon-wrap";
+        wrap.style.background = svc.accent;
+
+        const img = document.createElement("img");
+        img.src = svc.favicon;
+        img.alt = svc.name;
+        img.onerror = () => {
+          img.remove();
+          const fb = document.createElement("span");
+          fb.className = "fallback";
+          fb.textContent = svc.letter;
+          wrap.appendChild(fb);
+        };
+        wrap.appendChild(img);
+
+        const label = document.createElement("span");
+        label.className = "card-label";
+        label.textContent = svc.name;
+
+        const url = document.createElement("span");
+        url.className = "card-url";
+        url.textContent = new URL(svc.url).host;
+
+        a.appendChild(wrap);
+        a.appendChild(label);
+        a.appendChild(url);
+        grid.appendChild(a);
+      });
+    }
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById("clock").textContent = now.toLocaleString("de-DE", {
+        weekday: "long", year: "numeric", month: "long",
+        day: "numeric", hour: "2-digit", minute: "2-digit"
+      });
+    }
+
+    buildCards();
+    updateClock();
+    setInterval(updateClock, 10000);
+  </script>
+</body>
+</html>
